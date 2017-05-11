@@ -1,0 +1,77 @@
+package main
+
+import (
+	"flag"
+	"fmt"
+	"html/template"
+	"ivanturianytsia/goblueprints/trace"
+	"log"
+	"net/http"
+	"os"
+	"path/filepath"
+	"sync"
+
+	"github.com/stretchr/gomniauth"
+	"github.com/stretchr/gomniauth/providers/github"
+	"github.com/stretchr/objx"
+	"github.com/stretchr/signature"
+)
+
+type templateHandler struct {
+	once     sync.Once
+	filename string
+	templ    *template.Template
+}
+
+func (t *templateHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	t.once.Do(func() {
+		t.templ = template.Must(template.ParseFiles(filepath.Join("templates", t.filename)))
+	})
+	data := map[string]interface{}{
+		"Host": r.Host,
+	}
+	if authCookie, err := r.Cookie("auth"); err == nil {
+		data["UserData"] = objx.MustFromBase64(authCookie.Value)
+	}
+	t.templ.Execute(w, data)
+}
+
+func main() {
+	var addr = flag.String("addr", ":8080", "The addr of the application.")
+	var callback = os.Getenv("CALLBACK_URL")
+	if callback == "" {
+		callback = "http://localhost:8080/auth/callback"
+	}
+	var githubID = os.Getenv("GITHUB_ID")
+	var githubKey = os.Getenv("GITHUB_KEY")
+	// Parse the flags
+	flag.Parse()
+
+	// Auth providers
+	gomniauth.SetSecurityKey(signature.RandomKey(64))
+	gomniauth.WithProviders(
+		// facebook.New("key", "secret", fmt.Sprintf("%s/facebook", callback)),
+		github.New(githubID, githubKey, fmt.Sprintf("%s/github", callback)),
+		// google.New("key", "secret", fmt.Sprintf("%s/google", callback)),
+	)
+
+	// Initialize the room
+	r := newRoom()
+	r.tracer = trace.New(os.Stdout)
+	// Serve pages
+	http.Handle("/", MustAuth(&templateHandler{filename: "chat.html"}))
+	http.Handle("/login", &templateHandler{filename: "login.html"})
+	// Authenticate users
+	http.HandleFunc("/auth/", loginHandler)
+	// Serve websocket upgrader
+	http.Handle("/room", r)
+	// Serve static assets
+	http.Handle("/assets/", http.StripPrefix("/assets", http.FileServer(http.Dir("assets/"))))
+
+	go r.run()
+
+	log.Println("Starting web server on", *addr)
+	if err := http.ListenAndServe(*addr, nil); err != nil {
+		log.Fatal("ListenAndServe: ", err)
+	}
+}

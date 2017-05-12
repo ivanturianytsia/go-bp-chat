@@ -55,7 +55,7 @@ func main() {
 	)
 
 	// Initialize the room
-	r := newRoom()
+	r := newRoom(UseGravatar)
 	r.tracer = trace.New(os.Stdout)
 	// Serve pages
 	http.Handle("/", MustAuth(&templateHandler{filename: "chat.html"}))

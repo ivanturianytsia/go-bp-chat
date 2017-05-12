@@ -2,73 +2,35 @@
 
 <head>
   <title>Chat</title>
-  <style media="screen">
-    input {
-      display: block;
-    }
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap-theme.min.css" rel="stylesheet" crossorigin="anonymous">
+  <link rel="stylesheet" href="/assets/style.css">
 
-    ul {
-      list-style: none;
-    }
-  </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" crossorigin="anonymous"></script>
 </head>
 
 <body>
-  <ul id="messages">
+  <div class="container">
+    <div class="panel panel-default">
+      <div class="panel-body">
+        <ul id="messages"></ul>
+      </div>
+    </div>
+    <form id="chatbox" role="form">
+      <div class="form-group">
+        <label for="message">Send a message as {{ .UserData.name }}</label> or <a href="/logout">sign out</a>
+        <textarea class="form-control" id="message" cols="30" rows="10"></textarea>
+      </div>
+      <input class="btn btn-default" type="submit" value="Send" />
+    </form>
+  </div>
 
-  </ul>
-  <form action="" id="chatbox">
-    {{ .UserData.name }}: <br />
-    <textarea name="" id="" cols="30" rows="10"></textarea>
-    <input type="submit" value="Send" /> or <a href="/logout">sign out</a>
-  </form>
 
   <script type="text/javascript">
-    $(function() {
-      var socket = null;
-      var msgBox = $("#chatbox textarea");
-      var messages = $("#messages");
-      $("#chatbox").submit(function(event) {
-        event.preventDefault()
-
-        if (!msgBox.val()) {
-          return false;
-        }
-        if (!socket) {
-          alert("Error: There is no socket connection.")
-          return false;
-        }
-        socket.send(JSON.stringify({
-          "Message": msgBox.val()
-        }));
-        msgBox.val("");
-        return false
-      })
-
-      if (!window["WebSocket"]) {
-        alert("Error: Your browser does not support web sockets.")
-      } else {
-        socket = new WebSocket("ws://{{ .Host }}/room");
-        socket.onclose = function() {
-          alert("Connection has been closed.");
-        }
-        socket.onmessage = function(event) {
-          var msg = JSON.parse(event.data);
-          messages.append(
-            $("<li>").append(
-              $("<img>").css({
-                width: 50,
-                verticalAlign: "middle"
-              }).attr("src", msg.AvatarURL),
-              $("<strong>").text(msg.Name + ": "),
-              $("<span>").text(msg.Message)
-            )
-          );
-        }
-      }
-    })
+    var host = "{{ .Host }}"
   </script>
+  <script type="text/javascript" src="/assets/script.js"></script>
 </body>
 
 </html>

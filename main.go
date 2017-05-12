@@ -12,6 +12,7 @@ import (
 	"sync"
 
 	"github.com/stretchr/gomniauth"
+	"github.com/stretchr/gomniauth/providers/facebook"
 	"github.com/stretchr/gomniauth/providers/github"
 	"github.com/stretchr/objx"
 	"github.com/stretchr/signature"
@@ -42,16 +43,14 @@ func main() {
 	if callback == "" {
 		callback = "http://localhost:8080/auth/callback"
 	}
-	var githubID = os.Getenv("GITHUB_ID")
-	var githubKey = os.Getenv("GITHUB_KEY")
 	// Parse the flags
 	flag.Parse()
 
 	// Auth providers
 	gomniauth.SetSecurityKey(signature.RandomKey(64))
 	gomniauth.WithProviders(
-		// facebook.New("key", "secret", fmt.Sprintf("%s/facebook", callback)),
-		github.New(githubID, githubKey, fmt.Sprintf("%s/github", callback)),
+		facebook.New(os.Getenv("FACEBOOK_ID"), os.Getenv("FACEBOOK_KEY"), fmt.Sprintf("%s/facebook", callback)),
+		github.New(os.Getenv("GITHUB_ID"), os.Getenv("GITHUB_KEY"), fmt.Sprintf("%s/github", callback)),
 		// google.New("key", "secret", fmt.Sprintf("%s/google", callback)),
 	)
 
@@ -63,6 +62,16 @@ func main() {
 	http.Handle("/login", &templateHandler{filename: "login.html"})
 	// Authenticate users
 	http.HandleFunc("/auth/", loginHandler)
+	http.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
+		http.SetCookie(w, &http.Cookie{
+			Name:   "auth",
+			Value:  "",
+			Path:   "/",
+			MaxAge: -1,
+		})
+		w.Header().Set("Location", "/chat")
+		w.WriteHeader(http.StatusTemporaryRedirect)
+	})
 	// Serve websocket upgrader
 	http.Handle("/room", r)
 	// Serve static assets

@@ -1,5 +1,6 @@
 bin/*
 tmp/*
+avatars/*
 docker-compose.yml
 
 # Compiled Object files, Static and Dynamic libs (Shared Objects)

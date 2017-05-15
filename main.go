@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 	"html/template"
-	"ivanturianytsia/goblueprints/trace"
 	"log"
 	"net/http"
 	"os"
@@ -17,6 +16,11 @@ import (
 	"github.com/stretchr/objx"
 	"github.com/stretchr/signature"
 )
+
+var avatars Avatar = TryAvatars{
+	UseFileSystemAvatar,
+	UseAuthAvatar,
+	UseGravatar}
 
 type templateHandler struct {
 	once     sync.Once
@@ -55,11 +59,16 @@ func main() {
 	)
 
 	// Initialize the room
-	r := newRoom(UseGravatar)
-	r.tracer = trace.New(os.Stdout)
+	r := newRoom()
+	// r.tracer = trace.New(os.Stdout)
+
 	// Serve pages
 	http.Handle("/", MustAuth(&templateHandler{filename: "chat.html"}))
 	http.Handle("/login", &templateHandler{filename: "login.html"})
+	http.Handle("/upload", &templateHandler{filename: "upload.html"})
+
+	http.HandleFunc("/uploader", uploaderHandler)
+
 	// Authenticate users
 	http.HandleFunc("/auth/", loginHandler)
 	http.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
@@ -72,10 +81,17 @@ func main() {
 		w.Header().Set("Location", "/chat")
 		w.WriteHeader(http.StatusTemporaryRedirect)
 	})
+
 	// Serve websocket upgrader
 	http.Handle("/room", r)
+
 	// Serve static assets
-	http.Handle("/assets/", http.StripPrefix("/assets", http.FileServer(http.Dir("assets/"))))
+	http.Handle("/assets/",
+		http.StripPrefix("/assets",
+			http.FileServer(http.Dir("./assets"))))
+	http.Handle("/avatars/",
+		http.StripPrefix("/avatars/",
+			http.FileServer(http.Dir("./avatars"))))
 
 	go r.run()
 

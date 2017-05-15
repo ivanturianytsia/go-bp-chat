@@ -6,6 +6,7 @@ RUN apk --update upgrade && \
     rm -rf /var/cache/apk/*
 
 RUN mkdir /chat
+RUN mkdir /chat/avatars
 
 WORKDIR /chat
 

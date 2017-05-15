@@ -36,6 +36,10 @@ function push_image {
   STEPNAME="Push Docker image to Docker Hub"
   start $STEPNAME
   docker push ivanturianytsia/bp-chat:latest
+
+  HASH=$(git rev-parse HEAD)
+  docker tag ivanturianytsia/bp-chat:latest ivanturianytsia/bp-chat:$HASH
+  docker push ivanturianytsia/bp-chat:$HASH
   complete $STEPNAME
 }
 

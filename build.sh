@@ -19,11 +19,8 @@ function build_binary_mac {
 function build_binary_alpine {
   STEPNAME="Building Alpine Linux binary"
   start $STEPNAME
-  docker run --rm \
-    -v "$PWD":/go/src/ivanturianytsia/goblueprints/chat \
-    -w /go/src/ivanturianytsia/goblueprints/chat \
-    blang/golang-alpine \
-    ls && go get -v -d && go build -v -o bin/chat_alpine .
+  go get -v -d
+  go build -v -o bin/chat_alpine .
   complete $STEPNAME
 }
 function build_binaries {

@@ -2,6 +2,7 @@ node {
     checkout scm
 
     stage("Build") {
+        sh 'ls'
         sh 'bash build.sh alpine'
         sh 'bash build.sh image'
     }

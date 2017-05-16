@@ -12,13 +12,14 @@ function complete {
 function build_binary_mac {
   STEPNAME="Building macOS binary"
   start $STEPNAME
-  go build -o bin/chat_mac .
+  go get
+  go build -v -o bin/chat_mac .
   complete $STEPNAME
 }
 function build_binary_alpine {
   STEPNAME="Building Alpine Linux binary"
   start $STEPNAME
-  CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o bin/chat_alpine .
+  docker run --rm -v "$PWD":/go/src/chat -w /go/src/chat blang/golang-alpine go get -v && go build -v -o bin/chat_alpine
   complete $STEPNAME
 }
 function build_binaries {
@@ -37,7 +38,6 @@ function push_image {
   start $STEPNAME
   docker push ivanturianytsia/bp-chat:latest
 
-  HASH=$(git rev-parse HEAD)
   docker tag ivanturianytsia/bp-chat:latest ivanturianytsia/bp-chat:$HASH
   docker push ivanturianytsia/bp-chat:$HASH
   complete $STEPNAME
@@ -47,13 +47,14 @@ function deploy {
   STEPNAME="Deploy Docker service localy"
   start $STEPNAME
 
-  HASH=$(git rev-parse HEAD)
   docker service update \
     --image ivanturianytsia/bp-chat:$HASH \
     bp-chat
 
   complete $STEPNAME
 }
+
+HASH=$(git rev-parse HEAD)
 
 case $1 in
   mac)

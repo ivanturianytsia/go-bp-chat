@@ -3,7 +3,7 @@ node {
     try {
       stage("Build") {
           sh 'docker run --rm \
-            -v ~/docker/jenkins/workspace/go-bp-chat:/go/src/chat \
+            -v /root/docker/jenkins/workspace/go-bp-chat:/go/src/chat \
             -w /go/src/chat \
             golang:latest bash -c "./build.sh alpine"'
           sh 'bash build.sh image'

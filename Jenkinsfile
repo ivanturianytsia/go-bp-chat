@@ -10,4 +10,9 @@ node {
             sh 'bash build.sh push'
         }
     }
+    stage("Deploy") {
+        withDockerRegistry([credentialsId: 'DockerHub']) {
+          sh 'bash build.sh deploy'
+        }
+    }
 }

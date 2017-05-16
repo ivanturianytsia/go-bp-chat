@@ -43,6 +43,18 @@ function push_image {
   complete $STEPNAME
 }
 
+function deploy {
+  STEPNAME="Deploy Docker service localy"
+  start $STEPNAME
+
+  HASH=$(git rev-parse HEAD)
+  docker service update \
+    --image ivanturianytsia/bp-chat:$HASH \
+    bp-chat
+
+  complete $STEPNAME
+}
+
 case $1 in
   mac)
     build_binary_mac
@@ -58,6 +70,9 @@ case $1 in
     ;;
   push)
     push_image
+    ;;
+  deploy)
+    deploy
     ;;
   all)
     build_binaries

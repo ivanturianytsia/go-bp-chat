@@ -23,9 +23,7 @@ function build_binary_alpine {
     -v "$PWD":/go/src/ivanturianytsia/goblueprints/chat \
     -w /go/src/ivanturianytsia/goblueprints/chat \
     blang/golang-alpine \
-    ls && \
-    go get -v -d && \
-    go build -v -o bin/chat_alpine .
+    ls && go get -v -d && go build -v -o bin/chat_alpine .
   complete $STEPNAME
 }
 function build_binaries {

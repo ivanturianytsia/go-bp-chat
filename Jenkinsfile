@@ -3,9 +3,9 @@ node {
     try {
       stage("Build") {
           sh 'docker run --rm \
-            -v "$PWD":/go/src/ivanturianytsia/goblueprints/chat \
-            -w /go/src/ivanturianytsia/goblueprints/chat \
-            blang/golang-alpine bash build.sh alpine'
+            -v ~/docker/jenkins/workspace/go-bp-chat:/go/src/chat \
+            -w /go/src/chat \
+            golang:latest bash -c "./build.sh alpine"'
           sh 'bash build.sh image'
       }
       stage("Publish") {

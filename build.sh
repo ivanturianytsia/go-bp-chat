@@ -12,15 +12,17 @@ function complete {
 function build_binary_mac {
   STEPNAME="Building macOS binary"
   start $STEPNAME
-  go get
+  go get -v -d -t
+  go test --cover -v ./...
   go build -v -o bin/chat_mac .
   complete $STEPNAME
 }
 function build_binary_alpine {
   STEPNAME="Building Alpine Linux binary"
   start $STEPNAME
-  go get -v -d
-  go build -v -o bin/chat_alpine .
+  go get -v -d -t
+  go test --cover -v ./...
+  CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -v -o bin/chat_alpine .
   complete $STEPNAME
 }
 function build_binaries {

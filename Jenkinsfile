@@ -2,7 +2,8 @@ node {
     checkout scm
     try {
       stage("Build") {
-          sh 'docker run --rm \
+          sh 'chmod -R 777 .'
+          sh 'sudo docker run --rm \
             -v /root/docker/jenkins/workspace/go-bp-chat:/go/src/chat \
             -w /go/src/chat \
             golang:latest bash -c "./build.sh alpine"'

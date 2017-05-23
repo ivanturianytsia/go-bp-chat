@@ -3,7 +3,7 @@ node {
     try {
       stage("Build") {
           sh 'chmod -R 777 .'
-          sh 'sudo docker run --rm \
+          sh 'docker run --rm \
             -v /root/docker/jenkins/workspace/go-bp-chat:/go/src/chat \
             -w /go/src/chat \
             golang:latest bash -c "./build.sh alpine"'
@@ -21,5 +21,7 @@ node {
       }
     } catch(error) {
       throw error
+    } finally {
+      sh 'rm -rf *'
     }
 }
